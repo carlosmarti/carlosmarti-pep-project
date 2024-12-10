@@ -3,7 +3,9 @@ package Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import Model.Account;
+import Model.Message;
 import Service.AccountService;
+import Service.MessageService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -15,6 +17,7 @@ import io.javalin.http.Context;
 public class SocialMediaController {
 
     private AccountService accService = new AccountService();
+    private MessageService msgService = new MessageService();
     
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
@@ -26,8 +29,9 @@ public class SocialMediaController {
         app.get("example-endpoint", this::exampleHandler);
 
         app.post("register", this::createAccountHandler);
-        app.post("login", this::logInAccount);
-        
+        app.post("login", this::logInAccountHandler);
+        app.post("messages", this::createMessageHandler);
+
 
         return app;
     }
@@ -56,7 +60,7 @@ public class SocialMediaController {
         }
     }
 
-    private void logInAccount(Context context){
+    private void logInAccountHandler(Context context){
         ObjectMapper objMapper = new ObjectMapper();
 
         try{
@@ -66,12 +70,31 @@ public class SocialMediaController {
                 context.json(objMapper.writeValueAsString(acc)).status(200);
             }
             else{
+                context.status(401);
+            }
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void createMessageHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try{
+            Message msg = objMapper.readValue(context.body(), Message.class);
+            Message result = msgService.createMessage(msg);
+            if(result != null){
+                context.json(objMapper.writeValueAsString(result)).status(200);
+            }
+            else{
                 context.status(400);
             }
         }catch(Exception e){
             System.out.println(e);
         }
     }
+
 
 
 }
