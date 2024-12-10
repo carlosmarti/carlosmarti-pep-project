@@ -1,5 +1,7 @@
 package Controller;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import Model.Account;
@@ -27,6 +29,12 @@ public class SocialMediaController {
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
+        app.get("messages", this::getAllMessagesHandler);
+        app.get("messages/{message_id}", this::getMessageHandler);
+
+        app.delete("messages/{message_id}", this::deleteMessageHandler);
+
+        app.patch("messages/{message_id}", this::updateMessageHandler);
 
         app.post("register", this::createAccountHandler);
         app.post("login", this::logInAccountHandler);
@@ -90,6 +98,59 @@ public class SocialMediaController {
             else{
                 context.status(400);
             }
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void getAllMessagesHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try{
+            List<Message> result = msgService.getAllMessages();
+            context.json(objMapper.writeValueAsString(result)).status(200);
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void getMessageHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try{
+            Message result = msgService.getMessage(context.pathParam("message_id"));
+
+            context.json(objMapper.writeValueAsString(result)).status(200);
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void deleteMessageHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try {
+            String result = msgService.deleteMessage(context.pathParam("message_id"));
+            context.json(objMapper.writeValueAsString(result)).status(200);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    private void updateMessageHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try{
+            Message requestBody = objMapper.readValue(context.body(), Message.class);
+            Message response = msgService.updateMessage(context.pathParam("message_id"), requestBody.getMessage_text());
+            if(!response.getMessage_text().isBlank())
+                context.json(objMapper.writeValueAsString(response)).status(200);
+            else
+                context.status(400);
         }catch(Exception e){
             System.out.println(e);
         }

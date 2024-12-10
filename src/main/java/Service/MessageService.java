@@ -1,5 +1,7 @@
 package Service;
 
+import java.util.List;
+
 import DAO.MessageDAO;
 import Model.Message;
 
@@ -20,5 +22,44 @@ public class MessageService {
             }
         }
         return null;
+    }
+
+    public Message getMessage(String msgId){
+
+        int numMsgId = Integer.parseInt(msgId);
+
+        return msgDAO.getMessage(numMsgId);
+    }
+
+    public List<Message> getAllMessages(){
+        return msgDAO.getAllMessages();
+    }
+
+    public String deleteMessage(String msgId){
+
+        int numMsgId = Integer.parseInt(msgId);
+        boolean result = false;
+        Message hasMessage = msgDAO.getMessage(numMsgId);
+
+        if(hasMessage != null)
+            result = msgDAO.deleteMessage(numMsgId);
+
+        if(result)
+            return "now-deleted";
+
+        return "";
+    }
+
+    public Message updateMessage(String msgId, String messageText){
+
+        int numMsgId = Integer.parseInt(msgId);
+        Message updatMessage = new Message();
+
+        if(msgDAO.getMessage(numMsgId) != null){
+            if(!messageText.isBlank() && messageText.length() > 255)
+                updatMessage = msgDAO.updateMessage(numMsgId, messageText);
+        }
+
+        return updatMessage;
     }
 }
