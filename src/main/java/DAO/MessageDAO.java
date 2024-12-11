@@ -21,14 +21,16 @@ public class MessageDAO {
         String sql = "Insert Into message (posted_by, message_text, time_posted_epoch) Values (?,?,?)";
 
         try{
-            PreparedStatement prState = con.prepareStatement(sql);
+            PreparedStatement prState = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             prState.setInt(1,m.getPosted_by());
             prState.setString(2, m.getMessage_text());
             prState.setLong(3, m.getTime_posted_epoch());
-            ResultSet result = prState.executeQuery();
-            if(result.next()){
-                Message ms = new Message(result.getInt("message_id"), result.getInt("posted_by"), result.getString("message_text"), result.getLong("time_posted_epoch"));
-                return ms;
+            
+            prState.executeUpdate();
+            ResultSet pkeyResultSet = prState.getGeneratedKeys();
+            if(pkeyResultSet.next()){
+                int generated_message_id = (int) pkeyResultSet.getLong(1);
+                return new Message(generated_message_id, m.getPosted_by(), m.getMessage_text(), m.getTime_posted_epoch());
             }
         }catch(SQLException e){
             System.out.println(e);
@@ -59,7 +61,7 @@ public class MessageDAO {
 
     public Message getMessage(int msgId){
 
-        Message msg = new Message();
+        Message msg = null;
 
         Connection con = ConnectionUtil.getConnection();
         String sql = "Select * From message Where message_id = ?";
@@ -69,10 +71,11 @@ public class MessageDAO {
             prState.setInt(1, msgId);
             ResultSet result = prState.executeQuery();
             if(result.next()){
-                msg.setMessage_id(result.getInt("message_id"));
+                msg = new Message(result.getInt("message_id"), result.getInt("posted_by"), result.getString("message_text"), result.getLong("time_posted_epoch"));
+                /*msg.setMessage_id(result.getInt("message_id"));
                 msg.setPosted_by(result.getInt("posted_by"));
                 msg.setMessage_text(result.getString("message_text"));
-                msg.setTime_posted_epoch(result.getLong("time_posted_epoch"));
+                msg.setTime_posted_epoch(result.getLong("time_posted_epoch"));*/
             }
         } catch (SQLException e) {
             System.out.println(e);
@@ -88,7 +91,10 @@ public class MessageDAO {
         try{
             PreparedStatement preparedStatement = con.prepareStatement(sql);
             preparedStatement.setInt(1, postId);
-            return preparedStatement.execute();
+            ResultSet rs = preparedStatement.executeQuery();
+            if(rs.next()){
+                return true;
+            }
         }catch(SQLException e){
             System.out.println(e);
         }
@@ -96,19 +102,32 @@ public class MessageDAO {
         return false;
     }
 
-    public boolean deleteMessage(int msgId){
+    public Message deleteMessage(Message msg){
 
         Connection con = ConnectionUtil.getConnection();
         String sql = "Delete From message Where message_id = ?";
 
-        try {
-            PreparedStatement prState = con.prepareStatement(sql);
-            prState.setInt(1, msgId);
-            return prState.execute();
-        } catch (SQLException e) {
-            System.out.println(e);
+        if(msg != null){
+            try {
+                PreparedStatement prState = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                prState.setInt(1, msg.getMessage_id());
+    
+                //TODO finish steps to return back a Message object
+                int result = prState.executeUpdate();
+                if(result == 1){
+                    ResultSet key = prState.getGeneratedKeys();
+                    if(key.next()){
+                        int pkMsg = key.getInt(1);
+                        if(pkMsg == msg.getMessage_id())
+                            return msg;
+                    }
+                }
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
         }
-        return false;
+        
+        return null;
     }
 
     public Message updateMessage(int msgId, String msg){

@@ -15,7 +15,7 @@ public class MessageService {
 
     public Message createMessage(Message msg){
 
-        if(msg.getMessage_text().length() > 255 && !msg.getMessage_text().isBlank()){
+        if(msg.getMessage_text().length() < 255 && !msg.getMessage_text().isBlank()){
             if(msgDAO.hasPoster(msg.getPosted_by())){
                 Message result = msgDAO.creatMessage(msg);
                 return result;
@@ -35,19 +35,21 @@ public class MessageService {
         return msgDAO.getAllMessages();
     }
 
-    public String deleteMessage(String msgId){
+    public Message deleteMessage(String msgId){
 
         int numMsgId = Integer.parseInt(msgId);
-        boolean result = false;
-        Message hasMessage = msgDAO.getMessage(numMsgId);
+        Message result = msgDAO.deleteMessage(msgDAO.getMessage(numMsgId));
+        /*
+         * Message hasMessage = msgDAO.getMessage(numMsgId);
 
         if(hasMessage != null)
-            result = msgDAO.deleteMessage(numMsgId);
+            result = msgDAO.deleteMessage(hasMessage);
+         */
+        
+        if(result != null)
+            return result;
 
-        if(result)
-            return "now-deleted";
-
-        return "";
+        return null;
     }
 
     public Message updateMessage(String msgId, String messageText){

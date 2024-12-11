@@ -16,7 +16,10 @@ public class AccountService {
      */
     public Account createAccount(Account acc){
         
-        if(acc.getUsername().length() < 4)
+        if(acc.getUsername().length() < 4 )
+            return null;
+        
+        if(acc.getPassword().length() < 4)
             return null;
 
         if(accDAO.isAccount(acc.getAccount_id()) == true)
@@ -27,7 +30,7 @@ public class AccountService {
         return result;
     }
 
-    public boolean loginAccount(Account acc){
+    public Account loginAccount(Account acc){
         return accDAO.accountLogIn(acc);
     }
 }

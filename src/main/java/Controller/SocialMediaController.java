@@ -74,9 +74,9 @@ public class SocialMediaController {
 
         try{
             Account acc = objMapper.readValue(context.body(), Account.class);
-            boolean result = accService.loginAccount(acc);
-            if(result){
-                context.json(objMapper.writeValueAsString(acc)).status(200);
+            Account result = accService.loginAccount(acc);
+            if(result != null){
+                context.json(objMapper.writeValueAsString(result)).status(200);
             }
             else{
                 context.status(401);
@@ -134,8 +134,12 @@ public class SocialMediaController {
         ObjectMapper objMapper = new ObjectMapper();
 
         try {
-            String result = msgService.deleteMessage(context.pathParam("message_id"));
-            context.json(objMapper.writeValueAsString(result)).status(200);
+            Message result = msgService.deleteMessage(context.pathParam("message_id"));
+            if(result != null)
+                context.json(objMapper.writeValueAsString(result)).status(200);
+            else{
+                context.status(200);
+            }  
         } catch (Exception e) {
             System.out.println(e);
         }

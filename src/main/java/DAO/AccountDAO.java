@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import Model.Account;
 import Util.ConnectionUtil;
@@ -12,10 +13,10 @@ public class AccountDAO {
     
     public Account registerAccount(Account acc){
         Connection con = ConnectionUtil.getConnection();
-        String sql = "Insert Into account (username, password) Values (?,?)";
+        String sql = "Insert Into account (username, password) Values (?, ?)";
 
         try{
-            PreparedStatement prState = con.prepareStatement(sql);
+            PreparedStatement prState = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             prState.setString(1, acc.getUsername());
             prState.setString(2, acc.getPassword());
             /*
@@ -25,10 +26,11 @@ public class AccountDAO {
                 account = new Account(result.getInt("account_id"),result.getString("username"), result.getString("password"));
             }
              */
-            prState.execute();
-            ResultSet resultKey = prState.getResultSet();
-            if(resultKey.next()){
-                return new Account(resultKey.getInt("account_id"), acc.getUsername(), acc.getPassword());
+            prState.executeUpdate();
+            ResultSet pkeyResultSet = prState.getGeneratedKeys();
+            if(pkeyResultSet.next()){
+                int generated_author_id = (int) pkeyResultSet.getLong(1);
+                return new Account(generated_author_id, acc.getUsername(), acc.getPassword());
             }
         }catch(SQLException e){
             System.out.println(e);
@@ -56,25 +58,24 @@ public class AccountDAO {
         return false;
     }
 
-    public boolean accountLogIn(Account acc){
+    public Account accountLogIn(Account acc){
 
         Connection con = ConnectionUtil.getConnection();
         String sql = "Select * From account Where username = ? and password = ?";
 
         try{
-            PreparedStatement prState = con.prepareStatement(sql);
+            PreparedStatement prState = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             prState.setString(1, acc.getUsername());
             prState.setString(2, acc.getPassword());
+
             ResultSet rs = prState.executeQuery();
             if(rs.next()){
-                Account account = new Account(rs.getInt("account_id"),rs.getString("username"), rs.getString("password"));
-                if(acc.username == account.getUsername() && acc.getPassword() == account.getPassword())
-                    return true;
+                return new Account(rs.getInt("account_id"),rs.getString("username"), rs.getString("password"));
             }
         }catch(SQLException e){
             System.out.println(e);
         }
 
-        return false;
+        return null;
     }
 }
