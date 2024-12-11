@@ -15,12 +15,13 @@ public class AccountService {
      * This method will create a user account given it meets its criteria.
      */
     public Account createAccount(Account acc){
-
+        
         if(acc.getUsername().length() < 4)
             return null;
 
         if(accDAO.isAccount(acc.getAccount_id()) == true)
             return null;
+        
 
         Account result = accDAO.registerAccount(acc);
         return result;

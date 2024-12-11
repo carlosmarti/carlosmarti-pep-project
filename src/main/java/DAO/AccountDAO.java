@@ -13,7 +13,6 @@ public class AccountDAO {
     public Account registerAccount(Account acc){
         Connection con = ConnectionUtil.getConnection();
         String sql = "Insert Into account (username, password) Values (?,?)";
-        Account account = null;
 
         try{
             PreparedStatement prState = con.prepareStatement(sql);
@@ -26,17 +25,16 @@ public class AccountDAO {
                 account = new Account(result.getInt("account_id"),result.getString("username"), result.getString("password"));
             }
              */
-            prState.executeUpdate();
-            ResultSet resultKey = prState.getGeneratedKeys();
+            prState.execute();
+            ResultSet resultKey = prState.getResultSet();
             if(resultKey.next()){
-                int generatedId = (int) resultKey.getLong(1);
-                account = new Account(generatedId, acc.getUsername(), acc.getPassword());
+                return new Account(resultKey.getInt("account_id"), acc.getUsername(), acc.getPassword());
             }
         }catch(SQLException e){
             System.out.println(e);
         }
         
-        return account;
+        return null;
     }
 
     public boolean isAccount(int accId){
