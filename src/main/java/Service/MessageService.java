@@ -62,4 +62,10 @@ public class MessageService {
 
         return updatMessage;
     }
+
+    public List<Message> getAllMessagesFromAccount(String postId){
+
+        int numpostId = Integer.parseInt(postId);
+        return msgDAO.getMessagesByPoster(numpostId);
+    }
 }

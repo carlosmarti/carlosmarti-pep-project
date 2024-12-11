@@ -19,7 +19,7 @@ public class AccountService {
         if(acc.getUsername().length() < 4)
             return null;
 
-        if(!accDAO.isAccount(acc.getAccount_id()))
+        if(accDAO.isAccount(acc.getAccount_id()) == true)
             return null;
 
         Account result = accDAO.registerAccount(acc);

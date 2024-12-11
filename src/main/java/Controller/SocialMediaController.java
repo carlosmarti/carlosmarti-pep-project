@@ -31,6 +31,7 @@ public class SocialMediaController {
         app.get("example-endpoint", this::exampleHandler);
         app.get("messages", this::getAllMessagesHandler);
         app.get("messages/{message_id}", this::getMessageHandler);
+        app.get("accounts/{account_id}/messages", this::getAllAccountMessagesHandler);
 
         app.delete("messages/{message_id}", this::deleteMessageHandler);
 
@@ -151,6 +152,18 @@ public class SocialMediaController {
                 context.json(objMapper.writeValueAsString(response)).status(200);
             else
                 context.status(400);
+        }catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void getAllAccountMessagesHandler(Context context){
+
+        ObjectMapper objMapper = new ObjectMapper();
+
+        try{
+            List<Message> allMsg = msgService.getAllMessagesFromAccount(context.pathParam("account_id"));
+            context.json(objMapper.writeValueAsString(allMsg)).status(200);
         }catch(Exception e){
             System.out.println(e);
         }
