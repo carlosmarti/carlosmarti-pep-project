@@ -1,5 +1,6 @@
 package Controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -122,8 +123,13 @@ public class SocialMediaController {
 
         try{
             Message result = msgService.getMessage(context.pathParam("message_id"));
-
-            context.json(objMapper.writeValueAsString(result)).status(200);
+            if(result.toString().isEmpty()){
+                context.status(200);
+            }
+            else{
+                context.json(objMapper.writeValueAsString(result)).status(200);
+            }
+            
         }catch(Exception e){
             System.out.println(e);
         }
@@ -135,10 +141,10 @@ public class SocialMediaController {
 
         try {
             Message result = msgService.deleteMessage(context.pathParam("message_id"));
-            if(result != null)
-                context.json(objMapper.writeValueAsString(result)).status(200);
-            else{
+            if(result.toString().isEmpty())
                 context.status(200);
+            else{
+                context.json(objMapper.writeValueAsString(result)).status(200);
             }  
         } catch (Exception e) {
             System.out.println(e);
@@ -152,7 +158,7 @@ public class SocialMediaController {
         try{
             Message requestBody = objMapper.readValue(context.body(), Message.class);
             Message response = msgService.updateMessage(context.pathParam("message_id"), requestBody.getMessage_text());
-            if(!response.getMessage_text().isBlank())
+            if(response != null)
                 context.json(objMapper.writeValueAsString(response)).status(200);
             else
                 context.status(400);
@@ -167,7 +173,14 @@ public class SocialMediaController {
 
         try{
             List<Message> allMsg = msgService.getAllMessagesFromAccount(context.pathParam("account_id"));
-            context.json(objMapper.writeValueAsString(allMsg)).status(200);
+            if(allMsg.isEmpty()){
+                List<Message> empty = new ArrayList<Message>();
+                context.json(objMapper.writeValueAsString(empty)).status(200);
+            }
+            else{
+                context.json(objMapper.writeValueAsString(allMsg)).status(200);
+            }
+            
         }catch(Exception e){
             System.out.println(e);
         }
